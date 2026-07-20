@@ -1,0 +1,152 @@
+  1|; Name: Huynh Phan Yuki
+  2|; Student ID: 106394628 / SWS01951
+  3|; Stage 3 – Implement Human versus Computer
+  4|      MOV R12, #0       // 0 = Player turn
+  5|      MOV R0, #Entrance
+  6|      STR R0, .WriteString // Print the prompt to screen
+  7|      MOV R0, #Username
+  8|      STR R0, .ReadString // Read user input (name) into Username
+  9|// ===== MATCHSTICK SETUP =====
+ 10|RegisterLoop:
+ 11|      MOV R0, #Setup
+ 12|      STR R0, .WriteString // Display "How many matchsticks (10-100)?"
+ 13|      LDR R1, .InputNum 
+ 14|      CMP R1, #10       //If less than 10 => go to Invalid
+ 15|      BLT InvalidRegister
+ 16|      CMP R1, #100      // If greater than 100 => go to Invalid
+ 17|      BGT InvalidRegister
+ 18|      STR R1, SavedR1
+ 19|      B Welcome
+ 20|InvalidRegister:
+ 21|      MOV R0, #InvalidRegisterText // Load invalid message
+ 22|      STR R0, .WriteString
+ 23|      B RegisterLoop
+ 24|// ===== INITIAL OUTPUT =====
+ 25|Welcome:
+ 26|      MOV R0, #PlayerEntrance // "Player "
+ 27|      STR R0, .WriteString
+ 28|      MOV R0, #Username
+ 29|      STR R0, .WriteString
+ 30|      MOV R0, #StickAnnounce1 // "There are "
+ 31|      STR R0, .WriteString
+ 32|      STR R1, .WriteUnsignedNum // Print matchsticks
+ 33|      MOV R0, #StickAnnounce2
+ 34|      STR R0, .WriteString // " matchsticks remaining"
+ 35|      B PlayerInput
+ 36|// ===================== PLAYER TURN =====================
+ 37|PlayerInput:
+ 38|      MOV R0, #PlayerTurn
+ 39|      STR R0, .WriteString
+ 40|      MOV R0, #Username
+ 41|      STR R0, .WriteString
+ 42|      MOV R0, #StickRemoval
+ 43|      STR R0, .WriteString
+ 44|      LDR R2, .InputNum
+ 45|      CMP R2, #1
+ 46|      BLT InvalidPlayerInput
+ 47|      CMP R2, #7
+ 48|      BGT InvalidPlayerInput
+ 49|      CMP R2, R1
+ 50|      BGT NotEnoughStick
+ 51|      B PlayerRemove
+ 52|InvalidPlayerInput:
+ 53|      MOV R0, #InvalidPlayerInputText
+ 54|      STR R0, .WriteString
+ 55|      B PlayerInput
+ 56|NotEnoughStick:
+ 57|      MOV R0, #SticksMinus
+ 58|      STR R0, .WriteString
+ 59|      B PlayerInput
+ 60|PlayerRemove:
+ 61|      SUB R1, R1, R2    // R1 = R1 - R2 (update sticks)
+ 62|      MOV R0, #StickNumRemain
+ 63|      STR R0, .WriteString
+ 64|      STR R1, .WriteUnsignedNum
+ 65|      CMP R1, #1
+ 66|      BEQ PlayerWin
+ 67|      CMP R1, #0
+ 68|      BEQ PlayerDraw
+ 69|      MOV R12, #1
+ 70|      B BotInput
+ 71|// ===================== BOT TURN =====================
+ 72|BotInput:
+ 73|      LDR R3, .Random   // Generate random number
+ 74|      LSL R3, R3, #29   // Keep only last 3 bits
+ 75|      LSR R3, R3, #29   // Result: 0–7
+ 76|      CMP R3, #1
+ 77|      BLT BotInput
+ 78|      CMP R3, #7
+ 79|      BGT BotInput
+ 80|      CMP R3, R1
+ 81|      BGT BotInput
+ 82|      MOV R0, #BotTurn
+ 83|      STR R0, .WriteString
+ 84|      MOV R0, #BotDecide
+ 85|      STR R0, .WriteString
+ 86|      STR R3, .WriteUnsignedNum
+ 87|      SUB R1, R1, R3
+ 88|      MOV R0, #StickNumRemain
+ 89|      STR R0, .WriteString
+ 90|      STR R1, .WriteUnsignedNum
+ 91|      CMP R1, #1
+ 92|      BEQ PlayerLose
+ 93|      CMP R1, #0
+ 94|      BEQ PlayerDraw
+ 95|      MOV R12, #0
+ 96|      B PlayerInput
+ 97|// ===================== END STATES =====================
+ 98|PlayerWin:
+ 99|      MOV R0, #PWinNotif
+100|      STR R0, .WriteString // Print win message
+101|      B Retry
+102|PlayerLose:
+103|      MOV R0, #PLoseNotif
+104|      STR R0, .WriteString // Print lose message
+105|      B Retry
+106|PlayerDraw:
+107|      MOV R0, #PDrawNotif
+108|      STR R0, .WriteString // Print draw message
+109|      B Retry
+110|// ===================== RETRY =====================
+111|Retry:
+112|      MOV R0, #PlayAgain
+113|      STR R0, .WriteString
+114|      MOV R0, #InputRetry
+115|      STR R0, .ReadString // Read input
+116|      LDR R1, [R0]
+117|      AND R1, R1, #0xFF // Extract ASCII
+118|      CMP R1, #121      // 'y'
+119|      BEQ RestartGame
+120|      CMP R1, #110      // 'n'
+121|      BEQ EndGame
+122|      MOV R0, #InvalidRetryText
+123|      STR R0, .WriteString
+124|      B Retry
+125|RestartGame:
+126|      LDR R1, SavedR1
+127|      MOV R12, #0
+128|      B Welcome
+129|EndGame:
+130|      HALT
+131|// ===================== DATA =====================
+132|SavedR1: .BLOCK 4
+133|InputRetry: .BLOCK 4
+134|Entrance: .ASCIZ "Please enter your name: "
+135|Username: .BLOCK 128
+136|Setup: .ASCIZ "\nHow many matchsticks (10-100)?\n"
+137|InvalidRegisterText: .ASCIZ "\nPlease enter a number between 10-100\n"
+138|PlayerEntrance: .ASCIZ "\nPlayer "
+139|StickAnnounce1: .ASCIZ "\nThere are "
+140|StickAnnounce2: .ASCIZ " matchsticks remaining\n"
+141|PlayerTurn: .ASCIZ "\nPlayer "
+142|StickRemoval: .ASCIZ ", how many do you want to remove (1-7)? "
+143|InvalidPlayerInputText: .ASCIZ "\nInvalid input! Choose 1-7\n"
+144|SticksMinus: .ASCIZ "\nNot enough matchsticks\n"
+145|StickNumRemain: .ASCIZ "\nMatchsticks left: "
+146|BotTurn: .ASCIZ "\nComputer Player's turn\n"
+147|BotDecide: .ASCIZ "Computer removes "
+148|PWinNotif: .ASCIZ "\nPlayer, YOU WIN!\n"
+149|PLoseNotif: .ASCIZ "\nPlayer, YOU LOSE!\n"
+150|PDrawNotif: .ASCIZ "\nIt's a draw!\n"
+151|PlayAgain: .ASCIZ "\nPlay again (y/n)? "
+152|InvalidRetryText: .ASCIZ "\nInvalid input\n"

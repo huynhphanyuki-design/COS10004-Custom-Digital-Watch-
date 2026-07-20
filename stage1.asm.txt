@@ -1,0 +1,36 @@
+  1|; Name: Huynh Phan Yuki
+  2|; Student ID: 106394628 / SWS01951
+  3|; Stage 1 – Game Setup
+  4|Start:
+  5|      MOV R0, #Entrance
+  6|      STR R0, .WriteString // Print the prompt to screen
+  7|      MOV R0, #Username
+  8|      STR R0, .ReadString // Read user input (name) into Username
+  9|MatchInput:
+ 10|      MOV R0, #Setup
+ 11|      STR R0, .WriteString // Display "How many matchsticks (10-100)?"
+ 12|      LDR R1, .InputNum 
+ 13|      CMP R1, #10       //If less than 10 => go to Invalid
+ 14|      BLT Invalid
+ 15|      CMP R1, #100      // If greater than 100 => go to Invalid
+ 16|      BGT Invalid 
+ 17|      B ValidAccess
+ 18|Invalid:
+ 19|      MOV R0, #InvalidText // Load invalid message
+ 20|      STR R0, .WriteString
+ 21|      B MatchInput
+ 22|ValidAccess:
+ 23|      MOV R0, #PlayerText // Load "Player 1 is "
+ 24|      STR R0, .WriteString
+ 25|      MOV R0, #Username // Load stored username
+ 26|      STR R0, .WriteString
+ 27|      MOV R0, #MatchText
+ 28|      STR R0, .WriteString
+ 29|      STR R1, .WriteUnsignedNum
+ 30|      HALT
+ 31|Entrance: .ASCIZ "Please enter your name:\n"
+ 32|Username: .BLOCK 128
+ 33|Setup: .ASCIZ "\nHow many matchsticks (10-100)?\n"
+ 34|InvalidText: .ASCIZ "Invalid Number, Please Only Type In Between 10-100\n"
+ 35|PlayerText: .ASCIZ "\nPlayer 1 is "
+ 36|MatchText: .ASCIZ "\nMatchsticks: "

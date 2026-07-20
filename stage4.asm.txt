@@ -1,0 +1,227 @@
+  1|; Name: Huynh Phan Yuki
+  2|; Student ID: 106394628 / SWS01951
+  3|; Stage 4 – Graphics
+  4|StartGame:
+  5|      MOV R12, #0
+  6|      MOV R0, #Entrance
+  7|      STR R0, .WriteString // Print the prompt to screen
+  8|      MOV R0, #Username
+  9|      STR R0, .ReadString // Read user input (name) into Username
+ 10|// ===== MATCHSTICK SETUP =====
+ 11|RegisterLoop:
+ 12|      MOV R0, #Setup
+ 13|      STR R0, .WriteString // Display "How many matchsticks (10-100)?"
+ 14|      LDR R1, .InputNum
+ 15|      CMP R1, #10       //If less than 10 => go to Invalid
+ 16|      BLT InvalidRegister
+ 17|      CMP R1, #100      // If greater than 100 => go to Invalid
+ 18|      BGT InvalidRegister
+ 19|      STR R1, SavedR1
+ 20|      MOV R9, R1
+ 21|      BL Graphic
+ 22|      B Welcome
+ 23|InvalidRegister:
+ 24|      MOV R0, #InvalidRegisterText // Load invalid message
+ 25|      STR R0, .WriteString
+ 26|      B RegisterLoop
+ 27|// ===== INITIAL OUTPUT =====
+ 28|Welcome:
+ 29|      MOV R0, #PlayerEntrance // "Player "
+ 30|      STR R0, .WriteString
+ 31|      MOV R0, #Username
+ 32|      STR R0, .WriteString
+ 33|      MOV R0, #StickAnnounce1 // "There are "
+ 34|      STR R0, .WriteString
+ 35|      STR R1, .WriteUnsignedNum // Print matchsticks
+ 36|      MOV R0, #StickAnnounce2 // " matchsticks remaining"
+ 37|      STR R0, .WriteString
+ 38|      B PlayerInput
+ 39|// ===================== PLAYER TURN =====================
+ 40|PlayerInput:
+ 41|      MOV R0, #PlayerTurn
+ 42|      STR R0, .WriteString
+ 43|      MOV R0, #Username
+ 44|      STR R0, .WriteString
+ 45|      MOV R0, #StickRemoval
+ 46|      STR R0, .WriteString
+ 47|      LDR R2, .InputNum
+ 48|      CMP R2, #1
+ 49|      BLT InvalidPlayerInput
+ 50|      CMP R2, #7
+ 51|      BGT InvalidPlayerInput
+ 52|      CMP R2, R1
+ 53|      BGT NotEnoughStick
+ 54|      B PlayerRemove
+ 55|InvalidPlayerInput:
+ 56|      MOV R0, #InvalidPlayerInputText
+ 57|      STR R0, .WriteString
+ 58|      B PlayerInput
+ 59|NotEnoughStick:
+ 60|      MOV R0, #SticksMinus
+ 61|      STR R0, .WriteString
+ 62|      B PlayerInput
+ 63|PlayerRemove:
+ 64|      SUB R1, R1, R2    // R1 = R1 - R2 (update sticks)
+ 65|      STR R1, SavedR1
+ 66|      MOV R0, #StickNumRemain
+ 67|      STR R0, .WriteString
+ 68|      STR R1, .WriteUnsignedNum
+ 69|      MOV R9, R1
+ 70|      BL Graphic
+ 71|      CMP R1, #1
+ 72|      BEQ PlayerWin
+ 73|      CMP R1, #0
+ 74|      BEQ PlayerDraw
+ 75|      MOV R12, #1
+ 76|      B BotInput
+ 77|// ===================== BOT TURN =====================
+ 78|BotInput:
+ 79|      LDR R3, .Random   // Generate random number
+ 80|      AND R3, R3, #7    // Limit 0–7
+ 81|      CMP R3, #1
+ 82|      BLT BotInput      // Retry if <1
+ 83|      CMP R3, R1
+ 84|      BGT BotInput
+ 85|      MOV R0, #BotTurn
+ 86|      STR R0, .WriteString // "Computer Player's turn"
+ 87|      MOV R0, #BotDecide
+ 88|      STR R0, .WriteString
+ 89|      STR R3, .WriteUnsignedNum
+ 90|      SUB R1, R1, R3
+ 91|      STR R1, SavedR1
+ 92|      MOV R0, #StickNumRemain
+ 93|      STR R0, .WriteString
+ 94|      STR R1, .WriteUnsignedNum
+ 95|      MOV R9, R1           // Update graphics
+ 96|      BL Graphic          // Redraw sticks
+ 97|      CMP R1, #1        // If 1 → player loses
+ 98|      BEQ PlayerLose
+ 99|      CMP R1, #0        // If 0 → draw
+100|      BEQ PlayerDraw 
+101|      MOV R12, #0       // Back to player
+102|      B PlayerInput
+103|// ===================== END STATES =====================
+104|PlayerWin:
+105|      MOV R0, #PWinNotif
+106|      STR R0, .WriteString // Print win message
+107|      B Retry
+108|PlayerLose:
+109|      MOV R0, #PLoseNotif
+110|      STR R0, .WriteString // Print lose message
+111|      B Retry
+112|PlayerDraw:
+113|      MOV R0, #PDrawNotif
+114|      STR R0, .WriteString // Print draw message
+115|      B Retry
+116|// ===================== RETRY =====================
+117|Retry:
+118|      MOV R0, #PlayAgain
+119|      STR R0, .WriteString
+120|      MOV R0, #InputRetry
+121|      STR R0, .ReadString
+122|      LDR R1, [R0]
+123|      AND R1, R1, #0xFF
+124|      CMP R1, #121
+125|      BEQ RestartGame
+126|      CMP R1, #110
+127|      BEQ EndGame
+128|      MOV R0, #InvalidRetryText
+129|      STR R0, .WriteString
+130|      B Retry
+131|RestartGame:
+132|      B StartGame
+133|EndGame:
+134|      HALT
+135|//=============Graphic=========================
+136|Graphic:
+137|      PUSH {R1, R2, R3, R4, R5, R6, R7, R8, R10, R11}
+138|      MOV R11, #.PixelScreen
+139|      MOV R1, #.red         //red color for stick 
+140|      MOV R2, #.orange      //orange color for stick 
+141|      PUSH {LR}
+142|      BL ClearCanvasScreen  
+143|      POP {LR}
+144|      MOV R3, #12032  
+145|      MOV R4, #11776
+146|      MOV R5, #11520
+147|      MOV R6, #11264
+148|      MOV R7, #0
+149|      MOV R8, R9
+150|StartDrawingStick:
+151|      CMP R7, R8      // Compare current index with total sticks
+152|      BLT DrawStick  //keep drawing if no enough
+153|      B Done
+154|DrawStick:
+155|      STR R2, [R11 + R3]      // Move right (next stick position)
+156|      STR R2, [R11 + R4]
+157|      STR R2, [R11 + R5]
+158|      STR R1, [R11 + R6]
+159|      ADD R7, R7, #1
+160|      CMP R7, R8
+161|      BLT AddMatchsticks
+162|      B Done
+163|AddMatchsticks:
+164|      ADD R3, R3, #8      
+165|      ADD R4, R4, #8
+166|      ADD R5, R5, #8
+167|      ADD R6, R6, #8
+168|      STR R2, [R11 + R3]
+169|      STR R2, [R11 + R4]
+170|      STR R2, [R11 + R5]
+171|      STR R1, [R11 + R6]
+172|      ADD R7, R7, #1
+173|      CMP R7, #32
+174|      BEQ NextLayer
+175|      CMP R7, #64
+176|      BEQ NextLayer
+177|      CMP R7, #96
+178|      BEQ NextLayer
+179|      CMP R7, R8
+180|      BLT AddMatchsticks
+181|Done:
+182|      POP {R1, R2, R3, R4, R5, R6, R7, R8, R10, R11}      // Restore registers
+183|      RET
+184|//========== Make a new layer ====================
+185|NextLayer:
+186|      MOV R10, #1528
+187|      SUB R3, R3, R10
+188|      SUB R4, R4, R10
+189|      SUB R5, R5, R10
+190|      SUB R6, R6, R10
+191|      B StartDrawingStick
+192|//===================== Clear Canvas =======================
+193|ClearCanvasScreen:
+194|      PUSH {R3, R4, R5, R6}
+195|      MOV R3, #.Pixel0
+196|      MOV R4, #3072
+197|      MOV R5, #0
+198|      MOV R6, #.white     // White color (background)
+199|ClearLoop:
+200|      STR R6, [R3 + R5]
+201|      ADD R5, R5, #4
+202|      CMP R5, R4
+203|      BLT ClearLoop
+204|      POP {R3, R4, R5, R6}     // Restore registers
+205|      RET
+206|// ===================== DATA =====================
+207|SavedR1: .BLOCK 4
+208|InputRetry: .BLOCK 4
+209|Entrance: .ASCIZ "Please enter your name: "
+210|Username: .BLOCK 128
+211|Setup: .ASCIZ "\nHow many matchsticks (10-100)?\n"
+212|InvalidRegisterText: .ASCIZ "\nPlease enter a number between 10-100\n"
+213|PlayerEntrance: .ASCIZ "\nPlayer "
+214|StickAnnounce1: .ASCIZ "\nThere are "
+215|StickAnnounce2: .ASCIZ " matchsticks remaining\n"
+216|PlayerTurn: .ASCIZ "\nPlayer "
+217|StickRemoval: .ASCIZ ", how many do you want to remove (1-7)? "
+218|InvalidPlayerInputText: .ASCIZ "\nInvalid input! Choose 1-7\n"
+219|SticksMinus: .ASCIZ "\nNot enough matchsticks\n"
+220|StickNumRemain: .ASCIZ "\nMatchsticks left: "
+221|BotTurn: .ASCIZ "\nComputer Player's turn\n"
+222|BotDecide: .ASCIZ "Computer removes "
+223|PWinNotif: .ASCIZ "\nPlayer, YOU WIN!\n"
+224|PLoseNotif: .ASCIZ "\nPlayer, YOU LOSE!\n"
+225|PDrawNotif: .ASCIZ "\nIt's a draw!\n"
+226|PlayAgain: .ASCIZ "\nPlay again (y/n)? "
+227|InvalidRetryText: .ASCIZ "\nInvalid input\n"

@@ -1,0 +1,90 @@
+  1|; Name: Huynh Phan Yuki
+  2|; Student ID: 106394628 / SWS01951
+  3|; Stage 2 – Single Player Input
+  4|Start:
+  5|      MOV R0, #Entrance
+  6|      STR R0, .WriteString // Print the prompt to screen
+  7|      MOV R0, #Username
+  8|      STR R0, .ReadString // Read user input (name) into Username
+  9|// ===== MATCHSTICK SETUP =====
+ 10|RegisterLoop: 
+ 11|      MOV R0, #Setup
+ 12|      STR R0, .WriteString // Display "How many matchsticks (10-100)?"
+ 13|      LDR R1, .InputNum 
+ 14|      CMP R1, #10       //If less than 10 => go to Invalid
+ 15|      BLT Invalid
+ 16|      CMP R1, #100      // If greater than 100 => go to Invalid
+ 17|      BGT Invalid 
+ 18|      B Welcome
+ 19|Invalid: 
+ 20|      MOV R0, #InvalidRegisterText // Load invalid message
+ 21|      STR R0, .WriteString 
+ 22|      B RegisterLoop
+ 23|// ===== INITIAL OUTPUT =====
+ 24|Welcome: 
+ 25|// Player 1 is <name>
+ 26|      MOV R0, #PlayerIntro // "PLayer 1 is"
+ 27|      STR R0, .WriteString 
+ 28|      MOV R0, #Username //{username}
+ 29|      STR R0, .WriteString
+ 30|// Matchsticks: <number>
+ 31|      MOV R0, #MatchText
+ 32|      STR R0, .WriteString 
+ 33|      STR R1, .WriteUnsignedNum 
+ 34|// ===== MAIN GAME LOOP =====
+ 35|PlayerInputLoop: 
+ 36|      CMP R1, #0 
+ 37|      BEQ PlayerWin     //Brach to winning text
+ 38|      MOV R0, #PlayerTurn 
+ 39|      STR R0, .WriteString 
+ 40|      MOV R0, #Username 
+ 41|      STR R0, .WriteString 
+ 42|      MOV R0, #StickAnnounce1 
+ 43|      STR R0, .WriteString 
+ 44|      STR R1, .WriteUnsignedNum 
+ 45|      MOV R0, #StickAnnounce2 
+ 46|      STR R0, .WriteString 
+ 47|      MOV R0, #StickRemoval 
+ 48|      STR R0, .WriteString 
+ 49|      LDR R2, .InputNum 
+ 50|      CMP R2, R1 
+ 51|      BGT NotEnoughStick 
+ 52|      CMP R2, #1 
+ 53|      BLT InvalidPlayerInput 
+ 54|      CMP R2, #7 
+ 55|      BGT InvalidPlayerInput 
+ 56|      B PlayerRemoveStick
+ 57|InvalidPlayerInput:
+ 58|      MOV R0, #InvalidPlayerInputText // Load invalid input message
+ 59|      STR R0, .WriteString
+ 60|      B PlayerInputLoop
+ 61|NotEnoughStick: 
+ 62|      MOV R0, #SticksMinus // Load "Not enough sticks"
+ 63|      STR R0, .WriteString 
+ 64|      B PlayerInputLoop 
+ 65|//=======Remove stick===========
+ 66|PlayerRemoveStick: 
+ 67|      SUB R1, R1, R2 
+ 68|      MOV R0, #StickNumRemain 
+ 69|      STR R0, .WriteString 
+ 70|      STR R1, .WriteUnsignedNum 
+ 71|      B PlayerInputLoop
+ 72|//=========Show player winning message========
+ 73|PlayerWin: 
+ 74|      MOV R0, #PWinNotif 
+ 75|      STR R0, .WriteString //print out "You Won"
+ 76|      HALT
+ 77|Entrance: .ASCIZ "Please enter your name:\n" 
+ 78|Username: .BLOCK 128 
+ 79|Setup: .ASCIZ "\nHow many matchsticks (10-100)?\n" 
+ 80|InvalidRegisterText: .ASCIZ "\nPlease Only Type In Between 10-100\n" 
+ 81|PlayerIntro: .ASCIZ "\nPlayer 1 is "
+ 82|MatchText: .ASCIZ "\nMatchsticks: "
+ 83|PlayerTurn: .ASCIZ "\nPlayer " 
+ 84|StickAnnounce1: .ASCIZ ", there are " 
+ 85|StickAnnounce2: .ASCIZ " matchsticks remaining\n" 
+ 86|StickRemoval: .ASCIZ "How many do you want to remove (1-7)? --> " 
+ 87|InvalidPlayerInputText: .ASCIZ "\nPlease Only Choose Between 1-7\n" 
+ 88|StickNumRemain: .ASCIZ "\nMatchsticks left: " 
+ 89|SticksMinus: .ASCIZ "\nNot enough sticks remaining\n" 
+ 90|PWinNotif: .ASCIZ "\nYou Win!\n" 
