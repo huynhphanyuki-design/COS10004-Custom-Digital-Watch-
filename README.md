@@ -1,2 +1,6 @@
 # COS10004-Custom-Digital-Watch-
-This assignment develops your practical skills in designing, implementing, and analysing digital circuits, particularly focusing on hardware/software trade-offs. Through the design of a simple digital stopwatch circuit, you'll practically apply concepts covered in the first 4-5 weeks of this unit, and modular circuit design. The assessment prepares you to articulate and justify design choices, fostering skills directly relevant to embedded systems and computer hardware development in industry.
+# Digital Stopwatch
+
+A modular digital stopwatch designed in **Logisim Evolution 3.8** for a Computer Systems assignment. This project demonstrates digital logic design, sub-circuit implementation, and hardware design principles while exploring hardware/software trade-offs.
+
+**Topics:** Digital Logic, Logisim Evolution, Computer Systems, Sequential Circuits, Hardware Design
